@@ -7,6 +7,7 @@ import (
 func GetMeliServer(input CryptoController) *gin.Engine{
 	router := gin.Default()
 	m := router.Group("/meli")
-	m.GET("/myapi", input.Request)
+	m.GET("/coinprice", input.CoinPrice)
+	m.GET("/listprice", input.ListPrice)
 	return router
 }

@@ -11,3 +11,17 @@ type Content struct {
 	Currency	string		`json:"currency"`
 }
 
+type ListCryptoResponse struct {
+	Items []CryptoResponse		`json:"items"`
+}
+
+type PartialResponse struct {
+	Id		string 	`json:"id"`
+	Partial	bool	`json:"partial"`
+}
+
+
+func BuildPartialResponse(id string) *PartialResponse{
+	return &PartialResponse{Id: id, Partial: true}
+}
+

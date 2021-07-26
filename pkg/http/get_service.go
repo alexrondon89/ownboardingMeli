@@ -2,11 +2,16 @@ package http
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
+	"ownboardingMeli/pkg/http/dto"
 )
 
-func GetRequest(url string) ([]byte, error){
+func GetRequest(url string) (*dto.HttpResponse, error){
 	resp, err := http.Get(url)
+	log.Println("imprime sl status code")
+	log.Println(resp.StatusCode)
+
 	if err != nil {
 		return nil, err
 	}
@@ -15,5 +20,6 @@ func GetRequest(url string) ([]byte, error){
 	if err != nil {
 		return nil, err
 	}
-	return body,nil
+	response := &dto.HttpResponse{Body: body, StatusCode: resp.StatusCode}
+	return response,nil
 }

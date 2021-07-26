@@ -1,10 +1,18 @@
 package dto
 
-type CoinGeckoResponse struct {
-	Id         string	`json:"id"`
-	MarketData CurrentPrice `json:"market_data"`
+import (
+	"ownboardingMeli/internal/client/coingecko_client/dto"
+)
+
+type ChannelInfo struct {
+	CryptoResponse 	*dto.CoinGeckoResponse
+	Error 			error
+	Coin			string
+	Currency 		string
+
 }
 
-type CurrentPrice struct {
-	CurrentPrice	map[string]float64  `json:"current_price"`
+func NewChannelInfo(body *dto.CoinGeckoResponse, err error, coin string, currency string) *ChannelInfo{
+	return &ChannelInfo{CryptoResponse: body, Error: err, Coin: coin, Currency: currency}
 }
+
