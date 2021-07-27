@@ -2,14 +2,13 @@ package coingecko_service
 
 import (
 	"log"
-	"ownboardingMeli/internal/api/coingecko_service/dto"
+	"ownboardingMeli/internal/api"
 	service "ownboardingMeli/internal/api/dto"
 	"ownboardingMeli/internal/client/coingecko_client"
 	client "ownboardingMeli/internal/client/coingecko_client/dto"
 	"strings"
+	"sync"
 )
-
-var ListResponse [] *dto.ChannelInfo
 
 type CoinGeckoService struct {
 	CoinGeckoClient coingecko_client.CoinGeckoClient
@@ -22,64 +21,77 @@ func NewCoinGeckoService(client *coingecko_client.CoinGeckoClient) *CoinGeckoSer
 func (s *CoinGeckoService) GetPrice(id string, currency string) (*service.CryptoResponse, error){
 	clientResponse , err := s.CoinGeckoClient.GetCoinPrice(id)
 	if err != nil {
-		return nil, err
+		return s.buildPartialResponse(id), err
 	}
 
-	response, err := buildResponse(clientResponse, currency)
-	return response, err
+	if _, ok := clientResponse.MarketData.CurrentPrice[currency]; !ok {
+		return s.buildPartialResponse(id), api.ErrorCurrencyNotExist
+	}
+
+	response := s.buildResponse(clientResponse, currency)
+	return response, nil
 }
 
-func (s *CoinGeckoService) GetListPrice(coins []string, currency string) ([]*dto.ChannelInfo, error){
+func (s *CoinGeckoService) GetListPrice(coins []string, currency string) ([]service.CryptoResponse, error){
+	n := len(coins)
+	ListResponse:= make([]service.CryptoResponse, n)
+	channel:= make(chan service.CryptoResponse, n)
+	wg:= sync.WaitGroup{}
+	wg.Add(n)
 
-	channelA := make(chan *dto.ChannelInfo)
-	channelB := make(chan *dto.ChannelInfo)
-	channelC := make(chan *dto.ChannelInfo)
+	for _, v := range coins{
+		go s.ReadCoinPrice(v, currency, &wg, channel)
+	}
 
-	go s.ReadCoinPrice(coins[0], currency, channelA)
-	go s.ReadCoinPrice(coins[1], currency, channelB)
-	go s.ReadCoinPrice(coins[2], currency, channelC)
-	a := <- channelA
-	b := <- channelB
-	c := <- channelC
+	wg.Wait()
+	close(channel)
 
-	log.Println(a)
-	log.Println(b)
-	log.Println(c)
+	for c:= range channel{
+		ListResponse = append(ListResponse, c)
+	}
 
-	ListResponse = append(ListResponse, a, b, c)
-	log.Println("luego de realizar las consultas")
-	log.Println(ListResponse)
 	return ListResponse, nil
 }
 
-func (s *CoinGeckoService) ReadCoinPrice(coin string, currency string, c chan <- *dto.ChannelInfo){
-	response , err := s.CoinGeckoClient.GetCoinPrice(coin)
-	channelInfo := dto.NewChannelInfo(response, err, coin, currency)
-	c <- channelInfo
+func (s *CoinGeckoService) ReadCoinPrice(id string, currency string, wg *sync.WaitGroup, c chan <- service.CryptoResponse){
+	defer wg.Done()
+	defer s.Recover(id, c)
+
+	clientResponse , err := s.CoinGeckoClient.GetCoinPrice(id)
+	if err != nil {
+		c<- *s.buildPartialResponse(id)
+	}
+
+	if id == "bitcoin"{
+		log.Println("imprime error de bitcoin")
+		panic("error de bitcoin")
+	}
+
+	c<- *s.buildResponse(clientResponse, currency)
+
 }
 
-func (s *CoinGeckoService) ListenCoinPrice(channelA, channelB , channelC <- chan client.CoinGeckoResponse) {
-	for {
-		log.Println("entra en ListenCoinPrice")
-		select {
-			case a := <- channelA:
-				log.Println("entra en channelA", a)
-			case b := <- channelB:
-				log.Println("entra en channelB", b)
-			case c := <- channelC:
-				log.Println("entra en channelC", c)
-		}
-		log.Println(ListResponse)
+func (s *CoinGeckoService) buildResponse(clientResponse *client.CoinGeckoResponse, currency string) *service.CryptoResponse {
+	return &service.CryptoResponse{
+		Id: clientResponse.Id,
+		Content: &service.Content{
+			Price: clientResponse.MarketData.CurrentPrice[strings.ToLower(currency)],
+			Currency: strings.ToUpper(currency),
+		},
+		Partial: false,
 	}
 }
 
-func buildResponse(clientResponse *client.CoinGeckoResponse, currency string) (*service.CryptoResponse, error){
-	var cryptoResponse service.CryptoResponse
+func (s *CoinGeckoService) buildPartialResponse(id string) *service.CryptoResponse{
+	return &service.CryptoResponse{
+		Id: id,
+		Partial: true,
+	}
+}
 
-	cryptoResponse.Id = clientResponse.Id
-	cryptoResponse.Content.Price = clientResponse.MarketData.CurrentPrice[currency]
-	cryptoResponse.Content.Currency = strings.ToUpper(currency)
-	cryptoResponse.Partial = false
-
-	return &cryptoResponse, nil
+func (s *CoinGeckoService) Recover(id string, c chan <- service.CryptoResponse) {
+	if r := recover(); r!= nil{
+		log.Println("asigna en recover")
+		c<- *s.buildPartialResponse("prueba")
+	}
 }

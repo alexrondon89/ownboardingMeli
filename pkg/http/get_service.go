@@ -2,15 +2,12 @@ package http
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"ownboardingMeli/pkg/http/dto"
 )
 
 func GetRequest(url string) (*dto.HttpResponse, error){
 	resp, err := http.Get(url)
-	log.Println("imprime sl status code")
-	log.Println(resp.StatusCode)
 
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"ownboardingMeli/internal/api"
 	"ownboardingMeli/internal/server/controller/crypto/dto"
+	"ownboardingMeli/pkg/Errors"
 )
 
 type CryptoController struct {
@@ -20,14 +21,22 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 	var data dto.Input
 
 	if err := c.BindQuery(&data); err !=nil{
-		c.JSON(http.StatusPartialContent, dto.BuildPartialResponse(data.Id))
+		log.Println("ERROR OCCURRED: ", err)
+		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
 		return
 	}
 
 	response, err := cr.CryptoService.GetPrice(data.Id, data.Currency)
-
 	if err != nil {
-		c.JSON(http.StatusPartialContent, dto.BuildPartialResponse(data.Id))
+		log.Println("ERROR OCCURRED GETTING COIN PRICE: ", err)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	if response.Content == nil{
+		log.Println("CONTENT IS NOT PRESENT IN RESPONSE")
+
+		c.JSON(http.StatusPartialContent, response)
 		return
 	}
 
@@ -35,15 +44,11 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 }
 
 func (cr *CryptoController) ListPrice(c *gin.Context){
-	coins := []string{"bitcoin", "sss", "cardano"}
-	currency := "USD"
-	//listResponse := []interface{}{}
+	coins := []string{"bitcoin", "ethereum", "cardano"}
+	currency := "usd"
 	list, _ := cr.CryptoService.GetListPrice(coins, currency)
 
-	log.Println("lista definitiva")
-	log.Println(list)
-
-
+	c.JSON(http.StatusOK, list)
 }
 
 

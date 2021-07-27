@@ -7,6 +7,9 @@ import (
 	"ownboardingMeli/pkg/http"
 )
 
+// ErrorBadRequest appear when status code is not 200
+var ErrorBadRequest = errors.New("status code different to 200")
+
 type CoinGeckoClient struct {
 	BaseUrl	string
 }
@@ -24,7 +27,7 @@ func (c *CoinGeckoClient) GetCoinPrice(path string) ( *dto.CoinGeckoResponse,err
 	}
 
 	if httpResponse.StatusCode != 200{
-		return nil, errors.New("status code different to 200")
+		return nil, ErrorBadRequest
 	}
 
 	coinGeckoResponse := dto.NewCoinGeckResponse()

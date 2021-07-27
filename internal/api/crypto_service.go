@@ -1,12 +1,13 @@
 package api
 
 import (
-	"ownboardingMeli/internal/api/coingecko_service/dto"
+	"errors"
 	service "ownboardingMeli/internal/api/dto"
-
 )
 
 type CryptoService interface {
 	GetPrice(id string, currency string) (*service.CryptoResponse, error)
-	GetListPrice(coins []string, currency string) ([]*dto.ChannelInfo, error)
+	GetListPrice(coins []string, currency string) ([]service.CryptoResponse, error)
 }
+
+var ErrorCurrencyNotExist = errors.New("currency is not available")

@@ -9,7 +9,6 @@ type ChannelInfo struct {
 	Error 			error
 	Coin			string
 	Currency 		string
-
 }
 
 func NewChannelInfo(body *dto.CoinGeckoResponse, err error, coin string, currency string) *ChannelInfo{
