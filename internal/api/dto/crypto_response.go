@@ -1,5 +1,10 @@
 package dto
 
+import (
+	client "ownboardingMeli/internal/client/coingecko_client/dto"
+	"strings"
+)
+
 type CryptoResponse struct {
 	Id        	string      `json:"id"`
 	Content		*Content	`json:"content,omitempty"`
@@ -15,13 +20,22 @@ type ListCryptoResponse struct {
 	Items []CryptoResponse		`json:"items"`
 }
 
-type PartialResponse struct {
-	Id		string 	`json:"id"`
-	Partial	bool	`json:"partial"`
+func BuildCryptoResponse(clientResponse *client.CoinGeckoResponse, currency string) *CryptoResponse{
+	return &CryptoResponse{
+			Id: clientResponse.Id,
+			Content: &Content{
+				Price: clientResponse.MarketData.CurrentPrice[strings.ToLower(currency)],
+				Currency: strings.ToUpper(currency),
+			},
+			Partial: false,
+		}
 }
 
-
-func BuildPartialResponse(id string) *PartialResponse{
-	return &PartialResponse{Id: id, Partial: true}
+func BuildPartialResponse(id string) *CryptoResponse{
+	return &CryptoResponse{
+		Id: id,
+		Partial: true,
+	}
 }
+
 

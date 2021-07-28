@@ -18,15 +18,15 @@ func NewCryptoController(service api.CryptoService) *CryptoController {
 }
 
 func (cr *CryptoController) CoinPrice(c *gin.Context){
-	var data dto.Input
+	var input dto.InputCoin
 
-	if err := c.BindQuery(&data); err !=nil{
+	if err := c.BindQuery(&input); err !=nil{
 		log.Println("ERROR OCCURRED: ", err)
 		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
 		return
 	}
 
-	response, err := cr.CryptoService.GetPrice(data.Id, data.Currency)
+	response, err := cr.CryptoService.GetPrice(input.Coin, input.Currency)
 	if err != nil {
 		log.Println("ERROR OCCURRED GETTING COIN PRICE: ", err)
 		c.JSON(http.StatusInternalServerError, response)
@@ -44,9 +44,16 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 }
 
 func (cr *CryptoController) ListPrice(c *gin.Context){
-	coins := []string{"bitcoin", "ethereum", "cardano"}
-	currency := "usd"
-	list, _ := cr.CryptoService.GetListPrice(coins, currency)
+	var input dto.InputListCoin
+	 ListCoins := []string{"bitcoin","ethereum", "cardano"}
+
+	if err := c.ShouldBindQuery(&input); err !=nil{
+		log.Println("ERROR OCCURRED: ", err)
+		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
+		return
+	}
+
+	list, _ := cr.CryptoService.GetListPrice(ListCoins, input.Currency)
 
 	c.JSON(http.StatusOK, list)
 }

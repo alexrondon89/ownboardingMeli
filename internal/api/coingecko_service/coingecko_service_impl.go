@@ -5,8 +5,6 @@ import (
 	"ownboardingMeli/internal/api"
 	service "ownboardingMeli/internal/api/dto"
 	"ownboardingMeli/internal/client/coingecko_client"
-	client "ownboardingMeli/internal/client/coingecko_client/dto"
-	"strings"
 	"sync"
 )
 
@@ -21,14 +19,14 @@ func NewCoinGeckoService(client *coingecko_client.CoinGeckoClient) *CoinGeckoSer
 func (s *CoinGeckoService) GetPrice(id string, currency string) (*service.CryptoResponse, error){
 	clientResponse , err := s.CoinGeckoClient.GetCoinPrice(id)
 	if err != nil {
-		return s.buildPartialResponse(id), err
+		return service.BuildPartialResponse(id), err
 	}
 
 	if _, ok := clientResponse.MarketData.CurrentPrice[currency]; !ok {
-		return s.buildPartialResponse(id), api.ErrorCurrencyNotExist
+		return service.BuildPartialResponse(id), api.ErrorCurrencyNotExist
 	}
 
-	response := s.buildResponse(clientResponse, currency)
+	response := service.BuildCryptoResponse(clientResponse, currency)
 	return response, nil
 }
 
@@ -63,33 +61,15 @@ func (s *CoinGeckoService) ReadCoinPrice(id string, currency string, wg *sync.Wa
 	}
 
 	if err != nil {
-		c<- *s.buildPartialResponse(id)
+		c<- *service.BuildPartialResponse(id)
 	}
 
-	c<- *s.buildResponse(clientResponse, currency)
-}
-
-func (s *CoinGeckoService) buildResponse(clientResponse *client.CoinGeckoResponse, currency string) *service.CryptoResponse {
-	return &service.CryptoResponse{
-		Id: clientResponse.Id,
-		Content: &service.Content{
-			Price: clientResponse.MarketData.CurrentPrice[strings.ToLower(currency)],
-			Currency: strings.ToUpper(currency),
-		},
-		Partial: false,
-	}
-}
-
-func (s *CoinGeckoService) buildPartialResponse(id string) *service.CryptoResponse{
-	return &service.CryptoResponse{
-		Id: id,
-		Partial: true,
-	}
+	c<- *service.BuildCryptoResponse(clientResponse, currency)
 }
 
 func (s *CoinGeckoService) Recover(id string, c chan <- service.CryptoResponse){
 	if r := recover(); r!= nil{
 		log.Println("panic occurred: ",r)
-		c <- *s.buildPartialResponse(id)
+		c <- *service.BuildPartialResponse(id)
 	}
 }
