@@ -1,19 +1,19 @@
-package crypto
+package coingecko_controller
 
 import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"ownboardingMeli/internal/api"
-	"ownboardingMeli/internal/server/controller/crypto/dto"
+	"ownboardingMeli/internal/server/controller/coingecko_controller/dto"
+	"ownboardingMeli/internal/service"
 	"ownboardingMeli/pkg/Errors"
 )
 
 type CryptoController struct {
-	CryptoService api.CryptoService
+	CryptoService service.CryptoService
 }
 
-func NewCryptoController(service api.CryptoService) *CryptoController {
+func NewCryptoController(service service.CryptoService) *CryptoController {
 	return &CryptoController{CryptoService: service}
 }
 
@@ -35,7 +35,6 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 
 	if response.Content == nil{
 		log.Println("CONTENT IS NOT PRESENT IN RESPONSE")
-
 		c.JSON(http.StatusPartialContent, response)
 		return
 	}
@@ -44,16 +43,10 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 }
 
 func (cr *CryptoController) ListPrice(c *gin.Context){
-	var input dto.InputListCoin
+	//var input dto.InputListCoin
 	 ListCoins := []string{"bitcoin","ethereum", "cardano"}
-
-	if err := c.ShouldBindQuery(&input); err !=nil{
-		log.Println("ERROR OCCURRED: ", err)
-		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
-		return
-	}
-
-	list, _ := cr.CryptoService.GetListPrice(ListCoins, input.Currency)
+	currency := "usd"
+	list, _ := cr.CryptoService.GetListPrice(ListCoins, currency)
 
 	c.JSON(http.StatusOK, list)
 }

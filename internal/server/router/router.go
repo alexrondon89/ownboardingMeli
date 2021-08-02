@@ -1,10 +1,11 @@
-package server
+package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"ownboardingMeli/internal/server"
 )
 
-func GetMeliServer(input CryptoController) *gin.Engine{
+func GetRouter(input server.CryptoController) *gin.Engine{
 	router := gin.Default()
 	m := router.Group("/meli")
 	m.GET("/coinprice", input.CoinPrice)
