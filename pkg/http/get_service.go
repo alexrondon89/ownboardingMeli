@@ -17,6 +17,6 @@ func GetRequest(url string) (*dto.HttpResponse, error){
 	if err != nil {
 		return nil, err
 	}
-	response := &dto.HttpResponse{Body: body, StatusCode: resp.StatusCode}
+	response := dto.NewHttpResponse(body, resp.StatusCode)
 	return response,nil
 }
