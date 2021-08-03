@@ -60,6 +60,7 @@ func (s *CoinGeckoService) ReadCoinPrices(coin string, currency string, wg *sync
 
 	if err != nil {
 		c<- *platform.BuildPartialResponse(coin)
+		return
 	}
 
 	c<- *platform.BuildCryptoResponse(clientResponse, currency)
