@@ -43,10 +43,15 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 }
 
 func (cr *CryptoController) ListPrice(c *gin.Context){
-	//var input dto.InputListCoin
-	 ListCoins := []string{"bitcoin","ethereum", "cardano"}
-	currency := "usd"
-	list, _ := cr.CryptoService.GetListPrice(ListCoins, currency)
+	var input dto.InputListCoin
+
+	if err := c.BindQuery(&input); err !=nil{
+		log.Println("ERROR OCCURRED: ", err)
+		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
+		return
+	}
+
+	list, _ := cr.CryptoService.GetListPrice(input.Coins, input.Currency)
 
 	c.JSON(http.StatusOK, list)
 }
