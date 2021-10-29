@@ -1,16 +1,29 @@
-package coingecko_controller
+package coingecko
 
 import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"ownboardingMeli/internal/server/controller/coingecko_controller/dto"
 	"ownboardingMeli/internal/service"
-	"ownboardingMeli/pkg/Errors"
+	errservice "ownboardingMeli/pkg/errors/service"
 )
 
 type CryptoController struct {
 	CryptoService service.CryptoService
+}
+
+type InputCoin struct {
+	Coin 			string		`json:"coin" validate:"required"`
+	Money						`json:"money" validate:"required"`
+}
+
+type InputListCoin struct {
+	Coins			[]string	`json:"coins" validate:"required"`
+	Money						`json:"money" validate:"required"`
+}
+
+type Money struct {
+	Currency string
 }
 
 func NewCryptoController(service service.CryptoService) *CryptoController {
@@ -18,11 +31,11 @@ func NewCryptoController(service service.CryptoService) *CryptoController {
 }
 
 func (cr *CryptoController) CoinPrice(c *gin.Context){
-	var input dto.InputCoin
+	var input InputCoin
 
 	if err := c.BindQuery(&input); err !=nil{
 		log.Println("ERROR OCCURRED: ", err)
-		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
+		c.JSON(http.StatusBadRequest, errservice.BuildBadRequestError(err.Error()))
 		return
 	}
 
@@ -43,11 +56,11 @@ func (cr *CryptoController) CoinPrice(c *gin.Context){
 }
 
 func (cr *CryptoController) ListPrice(c *gin.Context){
-	var input dto.InputListCoin
+	var input InputListCoin
 
 	if err := c.BindQuery(&input); err !=nil{
 		log.Println("ERROR OCCURRED: ", err)
-		c.JSON(http.StatusBadRequest, Errors.BuildBadRequestError(err.Error()))
+		c.JSON(http.StatusBadRequest, errservice.BuildBadRequestError(err.Error()))
 		return
 	}
 

@@ -1,4 +1,4 @@
-package dto
+package errors
 
 type ErrorResponse struct {
 	Code	int		`json:"code"`

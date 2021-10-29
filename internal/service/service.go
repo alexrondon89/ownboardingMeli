@@ -1,4 +1,9 @@
-package dto
+package service
+
+type CryptoService interface {
+	GetPrice(id string, currency string) (*CryptoResponse, error)
+	GetListPrice(coins []string, currency string) ([]CryptoResponse, error)
+}
 
 type CryptoResponse struct {
 	Id        	string      `json:"id"`
@@ -14,5 +19,3 @@ type Content struct {
 type ListCryptoResponse struct {
 	Items []CryptoResponse		`json:"items"`
 }
-
-

@@ -1,4 +1,4 @@
-package dto
+package http
 
 type HttpResponse struct {
 	StatusCode	int

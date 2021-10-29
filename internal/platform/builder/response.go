@@ -1,13 +1,13 @@
 //	methods that can be use across internal folder for different services
-package platform
+package builder
 
 import (
-	client "ownboardingMeli/internal/client/dto"
-	service "ownboardingMeli/internal/service/dto"
+	"ownboardingMeli/internal/client"
+	"ownboardingMeli/internal/service"
 	"strings"
 )
 
-func BuildCryptoResponse(clientResponse *client.ClientResponse, currency string) *service.CryptoResponse{
+func SuccessfulResponse(clientResponse *client.Response, currency string) *service.CryptoResponse{
 	return &service.CryptoResponse{
 		Id: clientResponse.Id,
 		Content: &service.Content{
@@ -18,7 +18,7 @@ func BuildCryptoResponse(clientResponse *client.ClientResponse, currency string)
 	}
 }
 
-func BuildPartialResponse(id string) *service.CryptoResponse{
+func PartialResponse(id string) *service.CryptoResponse{
 	return &service.CryptoResponse{
 		Id: id,
 		Partial: true,
