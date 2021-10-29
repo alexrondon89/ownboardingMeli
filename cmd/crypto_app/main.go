@@ -1,17 +1,17 @@
 package main
 
 import (
-	"ownboardingMeli/internal/client/coingecko_client"
-	"ownboardingMeli/internal/server/controller/coingecko_controller"
+	cli "ownboardingMeli/internal/client/coingecko/http"
+	contr "ownboardingMeli/internal/server/controller/coingecko"
 	"ownboardingMeli/internal/server/router"
-	"ownboardingMeli/internal/service/coingecko_service"
+	serv "ownboardingMeli/internal/service/coingecko"
 )
 
 func main () {
 	BaseUrl := "https://api.coingecko.com/api/v3/coins/"
-	coinGeckoClient := coingecko_client.NewCoinGeckoClient(BaseUrl)
-	service := coingecko_service.NewCoinGeckoService(coinGeckoClient)
-	controller := coingecko_controller.NewCryptoController(service)
+	coinGeckoClient := cli.NewCoinGeckoClient(BaseUrl)
+	service := serv.NewCoinGeckoService(coinGeckoClient)
+	controller := contr.NewCryptoController(service)
 	router := router.GetRouter(controller)
 	router.Run(":8080")
 }
